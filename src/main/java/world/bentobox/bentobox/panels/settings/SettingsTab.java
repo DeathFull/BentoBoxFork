@@ -1,24 +1,12 @@
 package world.bentobox.bentobox.panels.settings;
 
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Collectors;
-
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.World;
-import org.bukkit.conversations.ConversationFactory;
 import org.bukkit.event.inventory.ClickType;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
-
 import world.bentobox.bentobox.BentoBox;
-import world.bentobox.bentobox.api.commands.island.conversations.ConfirmPrompt;
 import world.bentobox.bentobox.api.flags.Flag;
 import world.bentobox.bentobox.api.flags.Flag.HideWhen;
 import world.bentobox.bentobox.api.flags.Flag.Mode;
@@ -35,12 +23,15 @@ import world.bentobox.bentobox.database.objects.Island;
 import world.bentobox.bentobox.lists.Flags;
 import world.bentobox.bentobox.util.Util;
 
+import java.util.*;
+import java.util.stream.Collectors;
+
 /**
  * Implements a {@link Tab} that shows settings for
  * {@link world.bentobox.bentobox.api.flags.Flag.Type#PROTECTION}, {@link world.bentobox.bentobox.api.flags.Flag.Type#SETTING}, {@link world.bentobox.bentobox.api.flags.Flag.Type#WORLD_SETTING}
+ *
  * @author tastybento
  * @since 1.6.0
- *
  */
 public class SettingsTab implements Tab, ClickHandler {
 
@@ -57,9 +48,10 @@ public class SettingsTab implements Tab, ClickHandler {
 
     /**
      * Show a tab of settings
+     *
      * @param world - world
-     * @param user - user who is viewing the tab
-     * @param type - flag type
+     * @param user  - user who is viewing the tab
+     * @param type  - flag type
      */
     public SettingsTab(World world, User user, Type type) {
         this.world = world;
@@ -69,9 +61,10 @@ public class SettingsTab implements Tab, ClickHandler {
 
     /**
      * Show a tab of settings
-     * @param world - world
-     * @param user - user who is viewing the tab
-     * @param type - flag type
+     *
+     * @param world       - world
+     * @param user        - user who is viewing the tab
+     * @param type        - flag type
      * @param defaultMode - the default mode to show
      * @since 2.4.0
      */
@@ -102,6 +95,7 @@ public class SettingsTab implements Tab, ClickHandler {
 
     /**
      * Get the icon for this tab
+     *
      * @return panel item
      */
     @Override
@@ -109,7 +103,7 @@ public class SettingsTab implements Tab, ClickHandler {
         PanelItemBuilder pib = new PanelItemBuilder();
         // Set the icon
         pib.icon(type.getIcon());
-        pib.name(getName());
+        pib.name(user.getTranslation(PROTECTION_PANEL + type.toString() + ".title", "[world_name]", plugin.getIWM().getFriendlyName(world)));
         pib.description(user.getTranslation(PROTECTION_PANEL + type.toString() + ".description"));
         return pib.build();
     }
@@ -119,11 +113,13 @@ public class SettingsTab implements Tab, ClickHandler {
      */
     @Override
     public String getName() {
-        return user.getTranslation(PROTECTION_PANEL + type.toString() + ".title", "[world_name]", plugin.getIWM().getFriendlyName(world));
+        return plugin.getPlaceholdersManager().replacePlaceholders(user.getPlayer(), "§f%img_offset_-47%%img_is_settings%");
+        //return user.getTranslation(PROTECTION_PANEL + type.toString() + ".title", "[world_name]", plugin.getIWM().getFriendlyName(world));
     }
 
     /**
      * Get all the flags as panel items
+     *
      * @return list of all the panel items for this flag type
      */
     @Override
@@ -150,8 +146,8 @@ public class SettingsTab implements Tab, ClickHandler {
         flags.removeAll(toBeRemoved);
 
         List<@Nullable PanelItem> result = flags.stream().map(
-                (f -> f.toPanelItem(plugin, user, world, island,
-                        plugin.getIWM().getHiddenFlags(world).contains(f.getID()))))
+                        (f -> f.toPanelItem(plugin, user, world, island,
+                                plugin.getIWM().getHiddenFlags(world).contains(f.getID()))))
                 .toList();
 
         return result;
@@ -168,30 +164,31 @@ public class SettingsTab implements Tab, ClickHandler {
 
         // Add the mode icon
         switch (currentMode.getOrDefault(user.getUniqueId(), Mode.BASIC)) {
-        case ADVANCED -> icons.put(7, new PanelItemBuilder().icon(Material.GOLD_INGOT)
-                .name(user.getTranslation(PROTECTION_PANEL + "mode.advanced.name"))
-                .description(user.getTranslation(PROTECTION_PANEL + "mode.advanced.description"), "",
-                        user.getTranslation(CLICK_TO_SWITCH,
-                                TextVariables.NEXT, user.getTranslation(PROTECTION_PANEL + "mode.expert.name")))
-                .clickHandler(this)
-                .build());
-        case EXPERT -> icons.put(7, new PanelItemBuilder().icon(Material.NETHER_BRICK)
-                .name(user.getTranslation(PROTECTION_PANEL + "mode.expert.name"))
-                .description(user.getTranslation(PROTECTION_PANEL + "mode.expert.description"), "",
-                        user.getTranslation(CLICK_TO_SWITCH,
-                                TextVariables.NEXT, user.getTranslation(PROTECTION_PANEL + "mode.basic.name")))
-                .clickHandler(this)
-                .build());
-        default -> icons.put(7, new PanelItemBuilder().icon(Material.IRON_INGOT)
-                .name(user.getTranslation(PROTECTION_PANEL + "mode.basic.name"))
-                .description(user.getTranslation(PROTECTION_PANEL + "mode.basic.description"), "",
-                        user.getTranslation(CLICK_TO_SWITCH,
-                                TextVariables.NEXT, user.getTranslation(PROTECTION_PANEL + "mode.advanced.name")))
-                .clickHandler(this)
-                .build());
+            case ADVANCED -> icons.put(6, new PanelItemBuilder().icon(Material.GOLD_INGOT)
+                    .name(user.getTranslation(PROTECTION_PANEL + "mode.advanced.name"))
+                    .description(user.getTranslation(PROTECTION_PANEL + "mode.advanced.description"), "",
+                            user.getTranslation(CLICK_TO_SWITCH,
+                                    TextVariables.NEXT, user.getTranslation(PROTECTION_PANEL + "mode.expert.name")))
+                    .clickHandler(this)
+                    .build());
+            case EXPERT -> icons.put(6, new PanelItemBuilder().icon(Material.NETHER_BRICK)
+                    .name(user.getTranslation(PROTECTION_PANEL + "mode.expert.name"))
+                    .description(user.getTranslation(PROTECTION_PANEL + "mode.expert.description"), "",
+                            user.getTranslation(CLICK_TO_SWITCH,
+                                    TextVariables.NEXT, user.getTranslation(PROTECTION_PANEL + "mode.basic.name")))
+                    .clickHandler(this)
+                    .build());
+            default -> icons.put(6, new PanelItemBuilder().icon(Material.IRON_INGOT)
+                    .name(user.getTranslation(PROTECTION_PANEL + "mode.basic.name"))
+                    .description(user.getTranslation(PROTECTION_PANEL + "mode.basic.description"), "",
+                            user.getTranslation(CLICK_TO_SWITCH,
+                                    TextVariables.NEXT, user.getTranslation(PROTECTION_PANEL + "mode.advanced.name")))
+                    .clickHandler(this)
+                    .build());
         }
 
-        // Add the reset everything to default - it's only in the player's settings panel 
+        // Add the reset everything to default - it's only in the player's settings panel
+        /*
         if (island != null && user.getUniqueId().equals(island.getOwner())) {
             icons.put(8, new PanelItemBuilder().icon(Material.TNT)
                     .name(user.getTranslation(PROTECTION_PANEL + "reset-to-default.name"))
@@ -215,6 +212,7 @@ public class SettingsTab implements Tab, ClickHandler {
                     })
                     .build());
         }
+        */
         return icons;
     }
 

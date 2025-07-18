@@ -1,21 +1,22 @@
 package world.bentobox.bentobox.api.panels;
 
+import org.bukkit.Material;
+import org.bukkit.Sound;
+import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.eclipse.jdt.annotation.NonNull;
+import world.bentobox.bentobox.BentoBox;
+import world.bentobox.bentobox.api.panels.builders.PanelItemBuilder;
+import world.bentobox.bentobox.api.panels.builders.TabbedPanelBuilder;
+import world.bentobox.bentobox.api.user.User;
+
 import java.security.InvalidParameterException;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.TreeMap;
-
-import org.bukkit.Material;
-import org.bukkit.Sound;
-import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.inventory.InventoryCloseEvent;
-import org.eclipse.jdt.annotation.NonNull;
-
-import world.bentobox.bentobox.BentoBox;
-import world.bentobox.bentobox.api.panels.builders.PanelItemBuilder;
-import world.bentobox.bentobox.api.panels.builders.TabbedPanelBuilder;
-import world.bentobox.bentobox.api.user.User;
 
 /**
  * Represents a panel with tabs. The top row of the panel is made up of up to 9 icons that are made of {@link world.bentobox.bentobox.api.panels.Tab}s.
@@ -39,6 +40,7 @@ public class TabbedPanel extends Panel implements PanelListener {
 
     /**
      * Construct the tabbed panel
+     *
      * @param tpb - tabbed panel builder
      */
     public TabbedPanel(TabbedPanelBuilder tpb) {
@@ -70,8 +72,9 @@ public class TabbedPanel extends Panel implements PanelListener {
 
     /**
      * Open the tabbed panel
+     *
      * @param activeTab - the tab to show referenced by the slot (0 through 8)
-     * @param page - the page of the tab to show (if multi paged)
+     * @param page      - the page of the tab to show (if multi paged)
      */
     public void openPanel(int activeTab, int page) {
 
@@ -101,19 +104,39 @@ public class TabbedPanel extends Panel implements PanelListener {
             // Adds the flag items
             panelItems.stream().filter(Objects::nonNull).skip(page * ITEMS_PER_PAGE).limit(page * ITEMS_PER_PAGE + ITEMS_PER_PAGE).forEach(i -> items.put(items.lastKey() + 1, i));
             // set up the footer
+            /*
             setupFooter(items);
+             */
             // Add forward and backward icons
             if (page > 0) {
                 // Previous page icon
-                items.put(46, new PanelItemBuilder().icon(Material.ARROW).name(tpb.getUser().getTranslation(PROTECTION_PANEL + "previous")).clickHandler((panel, user1, clickType, slot1) -> {
+                ItemStack previousIcon = ItemStack.of(Material.PAPER, 1);
+                ItemMeta previousIconMeta = previousIcon.getItemMeta();
+                previousIconMeta.setCustomModelData(6);
+                previousIcon.setItemMeta(previousIconMeta);
+                items.put(45, new PanelItemBuilder().icon(previousIcon).name(tpb.getUser().getTranslation(PROTECTION_PANEL + "previous")).clickHandler((panel, user1, clickType, slot1) -> {
                     this.activePage--;
                     this.refreshPanel();
                     return true;
                 }).build());
             }
+
+            ItemStack closeIcon = ItemStack.of(Material.PAPER, 1);
+            ItemMeta closeIconMeta = closeIcon.getItemMeta();
+            closeIconMeta.setCustomModelData(40);
+            closeIcon.setItemMeta(closeIconMeta);
+            items.put(49, new PanelItemBuilder().icon(closeIcon).name("§6§lRetour").clickHandler((panel, user1, clickType, slot1) -> {
+                user1.getPlayer().performCommand("is");
+                return true;
+            }).build());
+
             if ((page + 1) * ITEMS_PER_PAGE < panelItems.stream().filter(Objects::nonNull).count()) {
                 // Next page icon
-                items.put(52, new PanelItemBuilder().icon(Material.ARROW).name(tpb.getUser().getTranslation(PROTECTION_PANEL + "next")).clickHandler((panel, user1, clickType, slot1) -> {
+                ItemStack nextIcon = ItemStack.of(Material.PAPER, 1);
+                ItemMeta nextIconMeta = nextIcon.getItemMeta();
+                nextIconMeta.setCustomModelData(5);
+                nextIcon.setItemMeta(nextIconMeta);
+                items.put(53, new PanelItemBuilder().icon(nextIcon).name(tpb.getUser().getTranslation(PROTECTION_PANEL + "next")).clickHandler((panel, user1, clickType, slot1) -> {
                     this.activePage++;
                     this.refreshPanel();
                     return true;
@@ -128,7 +151,8 @@ public class TabbedPanel extends Panel implements PanelListener {
 
     /**
      * Shows the top row of icons
-     * @param tab  - active tab
+     *
+     * @param tab   - active tab
      * @param items - panel builder
      */
     private void setupHeader(Tab tab, TreeMap<Integer, PanelItem> items) {
@@ -176,7 +200,7 @@ public class TabbedPanel extends Panel implements PanelListener {
         // Trap top row tab clicks
         if (event.isLeftClick() && tpb.getTabs().containsKey(event.getRawSlot())
                 && (tpb.getTabs().get(event.getRawSlot()).getPermission().isEmpty()
-                        || tpb.getUser().hasPermission(tpb.getTabs().get(event.getRawSlot()).getPermission()) || tpb.getUser().isOp())) {
+                || tpb.getUser().hasPermission(tpb.getTabs().get(event.getRawSlot()).getPermission()) || tpb.getUser().isOp())) {
             event.setCancelled(true);
             this.openPanel(event.getRawSlot(), 0);
             user.getPlayer().playSound(user.getLocation(), Sound.BLOCK_STONE_BUTTON_CLICK_OFF, 1F, 1F);
@@ -194,6 +218,13 @@ public class TabbedPanel extends Panel implements PanelListener {
     }
 
     /**
+     * @param activeTab the activeTab to set
+     */
+    public void setActiveTab(int activeTab) {
+        this.activeTab = activeTab;
+    }
+
+    /**
      * @return the activePage
      */
     public int getActivePage() {
@@ -205,13 +236,6 @@ public class TabbedPanel extends Panel implements PanelListener {
      */
     public void setActivePage(int activePage) {
         this.activePage = activePage;
-    }
-
-    /**
-     * @param activeTab the activeTab to set
-     */
-    public void setActiveTab(int activeTab) {
-        this.activeTab = activeTab;
     }
 
 }

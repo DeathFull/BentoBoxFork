@@ -1,7 +1,5 @@
 package world.bentobox.bentobox.api.commands.island;
 
-import java.util.List;
-
 import world.bentobox.bentobox.api.commands.CompositeCommand;
 import world.bentobox.bentobox.api.flags.Flag;
 import world.bentobox.bentobox.api.panels.builders.TabbedPanelBuilder;
@@ -9,6 +7,8 @@ import world.bentobox.bentobox.api.user.User;
 import world.bentobox.bentobox.database.objects.Island;
 import world.bentobox.bentobox.panels.settings.SettingsTab;
 import world.bentobox.bentobox.util.Util;
+
+import java.util.List;
 
 /**
  * @author tastybento
@@ -46,14 +46,14 @@ public class IslandSettingsCommand extends CompositeCommand {
     @Override
     public boolean execute(User user, String label, List<String> args) {
         new TabbedPanelBuilder()
-        .user(user)
+                .user(user)
                 .island(island)
-        .world(island.getWorld())
-                .tab(1, new SettingsTab(getWorld(), user, Flag.Type.PROTECTION))
-                .tab(2, new SettingsTab(getWorld(), user, Flag.Type.SETTING))
-        .startingSlot(1)
-        .size(54)
-        .build().openPanel();
+                .world(island.getWorld())
+                .tab(2, new SettingsTab(getWorld(), user, Flag.Type.PROTECTION))
+                .tab(3, new SettingsTab(getWorld(), user, Flag.Type.SETTING))
+                .startingSlot(1)
+                .size(54)
+                .build().openPanel();
         return true;
     }
 }
