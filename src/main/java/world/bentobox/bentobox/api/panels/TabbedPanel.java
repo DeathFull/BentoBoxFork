@@ -112,7 +112,7 @@ public class TabbedPanel extends Panel implements PanelListener {
                 // Previous page icon
                 ItemStack previousIcon = ItemStack.of(Material.PAPER, 1);
                 ItemMeta previousIconMeta = previousIcon.getItemMeta();
-                previousIconMeta.setCustomModelData(6);
+                previousIconMeta.setCustomModelData(5);
                 previousIcon.setItemMeta(previousIconMeta);
                 items.put(45, new PanelItemBuilder().icon(previousIcon).name(tpb.getUser().getTranslation(PROTECTION_PANEL + "previous")).clickHandler((panel, user1, clickType, slot1) -> {
                     this.activePage--;
@@ -134,7 +134,7 @@ public class TabbedPanel extends Panel implements PanelListener {
                 // Next page icon
                 ItemStack nextIcon = ItemStack.of(Material.PAPER, 1);
                 ItemMeta nextIconMeta = nextIcon.getItemMeta();
-                nextIconMeta.setCustomModelData(5);
+                nextIconMeta.setCustomModelData(6);
                 nextIcon.setItemMeta(nextIconMeta);
                 items.put(53, new PanelItemBuilder().icon(nextIcon).name(tpb.getUser().getTranslation(PROTECTION_PANEL + "next")).clickHandler((panel, user1, clickType, slot1) -> {
                     this.activePage++;
